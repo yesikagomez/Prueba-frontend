@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Nav, Navbar} from 'react-bootstrap';
+import {Nav, Navbar, Form, FormControl, Button} from 'react-bootstrap';
 
 class Navegacion extends Component {
     render() {
@@ -8,9 +8,10 @@ class Navegacion extends Component {
                 <Navbar.Brand href="/">Prueba</Navbar.Brand>
                 <Navbar.Toggle />
                 <Navbar.Collapse className="justify-content-end">
-                    <Nav>
-                        <Nav.Link href="#">Registrarse</Nav.Link>
-                        <Nav.Link href="#">Inicar Sesión</Nav.Link>
+                    <Nav className="mr-auto">
+                        <Nav.Link href="/Registrar">Registar</Nav.Link>
+                        <Nav.Link href="/Formulario">Crear Formulario</Nav.Link>
+                        <Nav.Link href="/Tabla">Mostrar Formulario</Nav.Link>
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>
