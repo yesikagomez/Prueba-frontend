@@ -4,7 +4,7 @@ import {Button, Modal, Form,Dropdown} from 'react-bootstrap';
 import NavBar from './BarNav';
 import Swal from 'sweetalert2';
 
-const url="http://localhost:3005/formElements";
+const url="http://localhost:3005/formElements/";
 
 function Formulario() {
     
@@ -33,7 +33,9 @@ function Formulario() {
         setAbrir(!abierto);
     }
 
-    const editarModal=()=>{}
+    const editarModal=()=>{
+        setEditar(!editar);
+    }
 
     const peticionGet=async()=>{
         await axios.get(url)
@@ -47,6 +49,11 @@ function Formulario() {
     useEffect(async()=>{
         await peticionGet();
     },[])
+
+    const seleccionarForm=(form,caso)=>{
+        setForm(form);
+        (caso==='Editar')&&setEditar(true)
+    }
 
    const peticionPost=async()=>{
        if(data.length < 15){
@@ -68,11 +75,29 @@ function Formulario() {
               })
         }
     }
+
+    const peticionPut=async()=>{
+        await axios.put(url+form.id,form)
+        .then(response=>{
+            var dataNueva=data;
+            dataNueva.map(x=>{
+                if(form.id===x.id){
+                    x.displayName = form.displayName;
+                    x.type = form.type;
+                    x.required = form.required;
+                    x.pattern = form.pattern;
+                    x.isHidden = form.isHidden;
+                }
+            })
+            setData(dataNueva);
+            editarModal();
+        })
+    }
     
         return(
             <div>
                 <NavBar/>
-                <Button variant="info" onClick={abrirModal} className="mt-3"><i class="far fa-plus-square"></i>&nbsp;&nbsp;&nbsp;Agregar</Button>     
+                <Button variant="info" onClick={()=>abrirModal()} className="mt-3"><i class="far fa-plus-square"></i>&nbsp;&nbsp;&nbsp;Agregar</Button>     
                 {data.map(x=>{
                     return(
                         <div className = "container">
@@ -83,7 +108,7 @@ function Formulario() {
                                     <input className = "input-group flex-nowrap" type={x.type} name={x.displayName}/>
                                 </div>
                                 <div class="col-sm-2">
-                                    <Button variant="info" id={x.id}><i class="fas fa-edit"></i></Button>&nbsp;&nbsp;&nbsp;
+                                    <Button variant="info" id={x.id} onClick={()=>seleccionarForm(x,'Editar')}><i class="fas fa-edit"></i></Button>&nbsp;&nbsp;&nbsp;
                                     <Button variant="info" id={x.id}><i class="fas fa-trash-alt"></i></Button>
                                 </div>
                             </div>
@@ -136,10 +161,10 @@ function Formulario() {
                             </Form>
                         </Modal.Body>
                         <Modal.Footer>
-                        <Button variant="secondary" onClick={abrirModal}>
+                        <Button variant="secondary" onClick={()=>abrirModal()}>
                             Cancelar
                         </Button>
-                        <Button variant="primary" onClick={peticionPost} >
+                        <Button variant="primary" onClick={()=>peticionPost()} >
                             Agregar
                         </Button>
                         </Modal.Footer>
@@ -189,13 +214,13 @@ function Formulario() {
                             </Form>
                         </Modal.Body>
                         <Modal.Footer>
-                        <Button variant="secondary" onClick={abrirModal}>
+                        <Button variant="secondary" onClick={()=>abrirModal()}>
                             Cancelar
                         </Button>
-                        <Button variant="primary" onClick={peticionPost} >
+                        <Button variant="primary" onClick={()=>peticionPut()} >
                             Guardar
                         </Button>
-                        <Button variant="primary" onClick={peticionPost} >
+                        <Button variant="primary" onClick={()=>peticionPost()} >
                             Eliminar
                         </Button>
                         </Modal.Footer>
