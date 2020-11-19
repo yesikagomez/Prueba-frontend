@@ -52,7 +52,28 @@ function Formulario() {
 
     const seleccionarForm=(form,caso)=>{
         setForm(form);
-        (caso==='Editar')&&setEditar(true)
+        (caso==='Editar')?setEditar(true):eliminar()
+    }
+
+    const eliminar =()=>{
+        Swal.fire({
+            title: 'Seguro que desea eliminar el campo',
+            text: form.displayName,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+                peticionDelete();
+              Swal.fire(
+                'Deleted!',
+                'Your file has been deleted.',
+                'success'
+              )
+            }
+          })
     }
 
    const peticionPost=async()=>{
@@ -93,7 +114,15 @@ function Formulario() {
             editarModal();
         })
     }
-    
+    const peticionDelete=async()=>{
+        await axios.delete(url+form.id)
+        .then(response=>{
+            setData(data.filter(x=>x.id!==form.id))
+            if(editar==true){
+                editarModal();
+            }
+        })
+    }
         return(
             <div>
                 <NavBar/>
@@ -109,7 +138,7 @@ function Formulario() {
                                 </div>
                                 <div class="col-sm-2">
                                     <Button variant="info" id={x.id} onClick={()=>seleccionarForm(x,'Editar')}><i class="fas fa-edit"></i></Button>&nbsp;&nbsp;&nbsp;
-                                    <Button variant="info" id={x.id}><i class="fas fa-trash-alt"></i></Button>
+                                    <Button variant="info" id={x.id}  onClick={()=>seleccionarForm(x,'Eliminar')}><i class="fas fa-trash-alt"></i></Button>
                                 </div>
                             </div>
                             </form>
@@ -159,6 +188,8 @@ function Formulario() {
                                     </Form.Control>
                                 </Form.Group>
                             </Form>
+                            <Button variant="info">Guardar</Button>&nbsp;&nbsp;&nbsp;
+                            <Button variant="info"></Button>
                         </Modal.Body>
                         <Modal.Footer>
                         <Button variant="secondary" onClick={()=>abrirModal()}>
@@ -220,7 +251,7 @@ function Formulario() {
                         <Button variant="primary" onClick={()=>peticionPut()} >
                             Guardar
                         </Button>
-                        <Button variant="primary" onClick={()=>peticionPost()} >
+                        <Button variant="primary" onClick={()=>peticionDelete()} >
                             Eliminar
                         </Button>
                         </Modal.Footer>
