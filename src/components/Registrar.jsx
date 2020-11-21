@@ -1,108 +1,101 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Button,Form } from 'react-bootstrap';
-import { Formik } from 'formik';
-import * as Yup from "yup";
-import Navegacion from './BarNav';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
+import Swal from 'sweetalert2';
 
 const cookie = new Cookies();
+const url = 'http://localhost:4000/singup';
 
-const Registro = () => {
-        Yup.addMethod(Yup.mixed, 'methodName', function (anyArgsYouNeed) {
-            const { message } = anyArgsYouNeed;
-            return this.test('test-name', message, function (value) {
-                const { path, createError } = this;
-                const { some, more, args } = anyArgsYouNeed;
-                return false
-            });
-        });
-    
-        const schema = Yup.object().shape({
-            nombrecompleto: Yup.string().required("Valor requerido"),
-            correo: Yup.string().email("Ingrese un correo valido").required("El correo es un valor requerido"),
-            contrasenna: Yup.string().required("Campo requerido").min(5, "Minimo 5 caracteres")
-        })
-    
+function Registrar() {
 
+    const[user, setUser]=useState(
+        {
+            name: '',
+            email:'',
+            password:''
+        }
+    );
+
+    const handleChange = e=>{
+        const{name,value}=e.target;
+        setUser(prevState=>({
+            ...prevState,
+            [name]: value
+        }))
+    }
+
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        const confirmar = document.getElementById('confirmar').value;
+        if(user.name==""||user.password==""||user.email==""|| confirmar==""){
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Llene todo los campos'
+            })
+        }else{
+            if(user.password.length<=5){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'La contraseña debe tener más de 5 caracteres'
+                })
+            }else{
+                if(user.password == confirmar){
+                    const res = await axios.post(url,user); 
+                    if(res.data.status){
+                        cookie.set('name', user.name, {path:'/'});
+                        window.location.href="./Formulario";
+                    }else{
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'El correo ya existe'
+                        })
+                    }
+                }
+                else{
+                Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'La contraseña no coincide'
+                    })
+                }
+            }
+            
+        }
+    }
     return (
         <div>
-            <Navegacion/>
-            <Formik
-                validationSchema={schema}
-                onSubmit={async(values) => {
-                if(values.contrasenna==values.confirmar){
-                    let respuesta = await axios ('http://localhost:3005/usuario', { method: 'POST', body: JSON.stringify(values), headers: { 'Content-Type': 'application/json' } })
-                    if (respuesta.status === 201) {
-                        cookie.set('nombrecompleto', values.nombrecompleto, {path:'/'});
-                        cookie.set('correo', values.correo, {path:'/'});
-                        window.location.href="#";
-                    }
-                }else{
-                    alert("La contraseña debe ser igual");
-                }
-                }}
-                initialValues={{
-                    nombrecompleto: " ",
-                    correo: " ",
-                    contrasenna:" ",
-                }}
-            >
-                {props => {
-                    const {
-                        values,
-                        touched,
-                        errors,
-                        dirty,
-                        isSubmitting,
-                        handleChange,
-                        handleBlur,
-                        handleSubmit
-                } = props;
-                return <Form noValidate onSubmit={handleSubmit}>      
-            
+            <Form onSubmit={onSubmit}>      
                 <h2 className="m-3" >Registrese</h2>
-                    <Form.Group controlId="nombrecompleto">
+                    <Form.Group controlId="name">
                         <Form.Label>Nombre Completo</Form.Label>
                         <Form.Control 
                             type="text" 
-                            name="nombrecliente" 
+                            name="name" 
                             placeholder="Ingrese su nombre completo" 
                             onChange={handleChange}
-                            onBlur={handleBlur}
-                            isValid={touched.nombrecompleto && !errors.nombrecompleto}
-                            isInvalid={!!errors.nombrecompleto}
-                        />
-                        <Form.Control.Feedback>Campo valido!</Form.Control.Feedback>
-                        <Form.Control.Feedback type="invalid">{errors.nombrecompleto}</Form.Control.Feedback>
+                        />                       
                     </Form.Group>
-                    <Form.Group controlId="correo">
+                    <Form.Group controlId="email">
                         <Form.Label>Correo Electronico</Form.Label>
                         <Form.Control 
                             type="email" 
                             placeholder="Ingrese su correo electronico" 
-                            name="correo"
+                            name="email"
                             onChange={handleChange}
-                            onBlur={handleBlur}
-                            isValid={touched.correo && !errors.correo}
-                            isInvalid={!!errors.correo}         
                         />
-                        <Form.Control.Feedback>Campo valido!</Form.Control.Feedback>
-                        <Form.Control.Feedback type="invalid">{errors.correo}</Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group controlId="contrasenna">
+                    <Form.Group controlId="password">
                         <Form.Label>Contraseña</Form.Label>
                         <Form.Control 
                             type="password" 
                             placeholder="Contraseña" 
-                            name="contrasenna"
+                            name="password"
                             onChange={handleChange}
-                            onBlur={handleBlur}
-                            isValid={touched.contrasenna && !errors.contrasenna}
-                            isInvalid={!!errors.contrasenna}         
                         />
-                        <Form.Control.Feedback>Campo valido!</Form.Control.Feedback>
-                        <Form.Control.Feedback type="invalid">{errors.contrasenna}</Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group controlId="confirmar">
                         <Form.Label>Confirmar Contraseña</Form.Label>
@@ -111,21 +104,17 @@ const Registro = () => {
                             placeholder="Confirme contraseña" 
                             name="confirmar"
                             onChange={handleChange}
-                            onBlur={handleBlur}
-                            isValid={touched.confirmar && !errors.confirmar}
-                            isInvalid={!!errors.confirmar}         
+                            id="confirmar"
                         />
-                        <Form.Control.Feedback>Campo valido!</Form.Control.Feedback>
-                        <Form.Control.Feedback type="invalid">{errors.confirmar}</Form.Control.Feedback>
                     </Form.Group>
-                    <Button variant="primary" type="submit">
-                        Registrar
-                    </Button>
+                    <div className="col text-center">
+                        <Button variant="info" type="submit">
+                            Registrar
+                        </Button>
+                    </div>
                 </Form>
-                }}
-            </Formik>
         </div>
     )
 }
 
-export default Registro
+export default Registrar;

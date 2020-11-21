@@ -5,6 +5,7 @@ import BarNav from './components/BarNav';
 function App() {
   return (
     <div>
+      <BarNav/>
       <Routes className="justify"/>
     </div>
   );

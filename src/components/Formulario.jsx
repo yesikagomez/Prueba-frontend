@@ -1,26 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {Button, Modal, Form,Dropdown} from 'react-bootstrap';
-import NavBar from './BarNav';
+import {Button, Modal, Form} from 'react-bootstrap';
+import Cookies from 'universal-cookie';
 import Swal from 'sweetalert2';
 
-const url="http://localhost:3005/formElements/";
+const cookies = new Cookies();
+const urlba="http://localhost:4000/api/formulario/";
+const url = "http://localhost:3005/formElements/"
 
 function Formulario() {
-    
+
     const[data, setData]=useState([]);
     const[abierto, setAbrir]=useState(false);
     const[editar, setEditar]=useState(false);
     const[form, setForm]=useState(
         {
-            displayName: "",
-            type: "",
-            required: false,
-            pattern: "",
-            isHidden: true
-          }
+            name:"form",
+            username:"yesika"
+        }
     );
-       
+
     const handlechange=e=>{
         const{name,value}=e.target;
         setForm(prevState=>({
@@ -47,12 +46,29 @@ function Formulario() {
     }   
 
     useEffect(async()=>{
+         //NameForm();
+         //await peticionPostForm();
         await peticionGet();
     },[])
 
+    /*const NameForm=()=>{
+        Swal.mixin({
+            input: 'text',
+            confirmButtonText: 'Aceptar',
+            progressSteps: ['1']
+          }).queue([
+            {
+              title: 'Nombre Formulario',
+              text: 'Agreguele un nombre al formulario'
+            }
+          ]).then((result) => {
+              form.name=(result.value);
+              form.username = cookies.get('name');
+          })
+    }*/
     const seleccionarForm=(form,caso)=>{
         setForm(form);
-        (caso==='Editar')?setEditar(true):eliminar()
+        (caso==='Editar')?setEditar(true):peticionDelete()
     }
 
     const eliminar =()=>{
@@ -75,7 +91,10 @@ function Formulario() {
             }
           })
     }
-
+   /* const peticionPostForm = async() =>{
+        const res = await axios.post(url, form);
+        console.log(res);
+    }*/
    const peticionPost=async()=>{
        if(data.length < 15){
         await axios.post(url, form)
@@ -123,28 +142,43 @@ function Formulario() {
             }
         })
     }
+    function  cerrarSesion(){
+        /*cookies.remove('id', {path: "/"});
+        cookies.remove('nombrecliente', {path: "/"});
+        cookies.remove('nombreempresa', {path: "/"});
+        cookies.remove('numempleados', {path: "/"});
+        cookies.remove('annoslaborando', {path: "/"});
+        cookies.remove('correo', {path: "/"});*/
+        window.location.href='./';
+    }
         return(
             <div>
-                <NavBar/>
+                <div className="text-right">
+                <a variant="primary" className="mr-4" type="submit" onClick={()=>cerrarSesion()}>Cerrar Sesión</a>
+                </div>
                 <Button variant="info" onClick={()=>abrirModal()} className="mt-3"><i class="far fa-plus-square"></i>&nbsp;&nbsp;&nbsp;Agregar</Button>     
                 {data.map(x=>{
                     return(
                         <div className = "container">
                             <form>
                             <div class="form-group row">
-                                    <label className="col-sm-2 col-form-label" htmlFor={x.displayName}>{x.displayName}</label>
+                                    <label className="col-sm-2 col-form-label" htmlFor={x.displayName} required={x.required}>{x.displayName}</label>
                                 <div class="col-sm-8">
                                     <input className = "input-group flex-nowrap" type={x.type} name={x.displayName}/>
                                 </div>
-                                <div class="col-sm-2">
+                                <div className="col-sm-2">
                                     <Button variant="info" id={x.id} onClick={()=>seleccionarForm(x,'Editar')}><i class="fas fa-edit"></i></Button>&nbsp;&nbsp;&nbsp;
                                     <Button variant="info" id={x.id}  onClick={()=>seleccionarForm(x,'Eliminar')}><i class="fas fa-trash-alt"></i></Button>
                                 </div>
                             </div>
                             </form>
+                            
                         </div>
                          )
                     })}
+                    <div className="col text-center">
+                        <Button variant="info">Guardar</Button>&nbsp;&nbsp;&nbsp;
+                    </div>
                     <Modal show={abierto} onHide={abrirModal}>
                         <Modal.Header closeButton>
                         <Modal.Title>Agregar nuevo campo</Modal.Title>
@@ -159,10 +193,6 @@ function Formulario() {
                                     <Form.Label>Seleccione Tipo de Campo</Form.Label>
                                     <Form.Control as="select" name="type" onChange={handlechange}>
                                         <option>text</option>
-                                        <option>checkbox</option>
-                                        <option>radio</option>
-                                        <option>select</option>
-                                        <option>date</option>
                                         <option>textarea</option>
                                         <option>password</option>
                                         <option>email</option>
@@ -176,26 +206,13 @@ function Formulario() {
                                         <option>false</option>
                                     </Form.Control>
                                 </Form.Group>
-                                <Form.Group controlId="validacion">
-                                    <Form.Label>Validación</Form.Label>
-                                    <Form.Control type="text" placeholder="Ingrese la validación que desee" name="pattern" onChange={handlechange}/>
-                                </Form.Group>
-                                <Form.Group controlId="ocultar">
-                                    <Form.Label>Ocultar</Form.Label>
-                                    <Form.Control as="select"  name="isHidden" onChange={handlechange}>
-                                        <option>true</option>
-                                        <option>false</option>
-                                    </Form.Control>
-                                </Form.Group>
                             </Form>
-                            <Button variant="info">Guardar</Button>&nbsp;&nbsp;&nbsp;
-                            <Button variant="info"></Button>
                         </Modal.Body>
                         <Modal.Footer>
-                        <Button variant="secondary" onClick={()=>abrirModal()}>
+                        <Button variant="dark" onClick={()=>abrirModal()}>
                             Cancelar
                         </Button>
-                        <Button variant="primary" onClick={()=>peticionPost()} >
+                        <Button variant="info" onClick={()=>peticionPost()} >
                             Agregar
                         </Button>
                         </Modal.Footer>
@@ -214,10 +231,6 @@ function Formulario() {
                                     <Form.Label>Seleccione Tipo de Campo</Form.Label>
                                     <Form.Control as="select" name="type" onChange={handlechange} value={form && form.type}>
                                         <option>text</option>
-                                        <option>checkbox</option>
-                                        <option>radio</option>
-                                        <option>select</option>
-                                        <option>date</option>
                                         <option>textarea</option>
                                         <option>password</option>
                                         <option>email</option>
@@ -231,27 +244,16 @@ function Formulario() {
                                         <option>false</option>
                                     </Form.Control>
                                 </Form.Group>
-                                <Form.Group controlId="validacion">
-                                    <Form.Label>Validación</Form.Label>
-                                    <Form.Control type="text" placeholder="Ingrese la validación que desee" name="pattern" onChange={handlechange} value={form && form.pattern}/>
-                                </Form.Group>
-                                <Form.Group controlId="ocultar">
-                                    <Form.Label>Ocultar</Form.Label>
-                                    <Form.Control as="select"  name="isHidden" onChange={handlechange} value={form && form.isHidden}>
-                                        <option>true</option>
-                                        <option>false</option>
-                                    </Form.Control>
-                                </Form.Group>
                             </Form>
                         </Modal.Body>
                         <Modal.Footer>
-                        <Button variant="secondary" onClick={()=>abrirModal()}>
+                        <Button variant="dark" onClick={()=>abrirModal()}>
                             Cancelar
                         </Button>
-                        <Button variant="primary" onClick={()=>peticionPut()} >
+                        <Button variant="info" onClick={()=>peticionPut()} >
                             Guardar
                         </Button>
-                        <Button variant="primary" onClick={()=>peticionDelete()} >
+                        <Button variant="info" onClick={()=>peticionDelete()} >
                             Eliminar
                         </Button>
                         </Modal.Footer>
